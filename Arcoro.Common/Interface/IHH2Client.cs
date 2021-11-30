@@ -1,41 +1,46 @@
-﻿namespace Arcoro.Common.Interface
+﻿using System.Collections.Generic;
+using Arcoro.Common.Model.Company;
+using Arcoro.Common.Model.Employee;
+using Arcoro.Common.Model.Notification;
+
+namespace Arcoro.Common.Interface
 {
     public interface IHH2Client
     {
-        object GetAllEmployees();
-        object GetEmployeeSSN();
+        List<Employee> GetAllEmployees(long Version = 0);
+        List<EESSN> GetEmployeeSSN(string EEId);
         object GetEmployeeById();
-        object GetEmployeeAddress();
-        object GetEmployeeBirthDate();
+        List<EEAddress> GetEmployeeAddress(string EEId);
+        List<EEBirthDate> GetEmployeeBirthDate(string EEId);
         object GetAllPaychecks();
         object GetAllPaycheckDeductions();
         object GetAllDeductionsTest();
         object GetAllPaycheckFringes();
         object GetJobsByStatus();
         object GetJobByJobID();
-        object GetAllEmployeeDeductions();
+        List<EEDeduction> GetAllEmployeeDeductions(long Version = 0);
         object GetAllEmployeeFringes();
-        object GetAllEmployeePay();
+        List<EEPay> GetAllEmployeePay(long Version = 0);
         object GetAllTaxGroups();
-        object GetAllEmployeeStateTaxes();
-        object GetAllEmployeePayTaxes();
+        object GetAllEmployeeStateTaxes(List<Employee> eeList, List<EEPayTax> eePayTaxes);
+        List<EEPayTax> GetAllEmployeePayTaxes(long Version = 0);
         object GetAllEmployeeTime();
         object GetAllSyncErrors();
         object GetAllStandardCostCodes();
-        object GetAllCertifiedClasses();
+        List<CertifiedClass> GetAllCertifiedClasses(long Version = 0);
         object GetAllFringes();
-        object GetAllDeductions();
-        object GetAllDepartments();
+        List<Deduction> GetAllDeductions(long Version = 0);
+        List<Department> GetAllDepartments(long Version = 0);
         object GetAllEmploymentStatuses();
         object GetAllEmploymentTypes();
         object GetAllJobs();
-        object GetAllPayGroups();
-        object GetAllPayTaxes();
-        object GetAllPayTypes();
-        object GetAllUnions();
-        object GetAllUnionClasses();
-        object GetAllUnionLocals();
-        object GetNotificationRegistrations();
+        List<PayGroup> GetAllPayGroups();
+        List<PayTax> GetAllPayTaxes(long Version = 0);
+        List<PayType> GetAllPayTypes(long Version = 0);
+        List<Union> GetAllUnions(long Version = 0);
+        List<UnionClass> GetAllUnionClasses(long Version = 0);
+        List<UnionLocal> GetAllUnionLocals(long Version = 0);
+        IList<Registration> GetNotificationRegistrations();
         object GetChangeEvents();
     }
 }

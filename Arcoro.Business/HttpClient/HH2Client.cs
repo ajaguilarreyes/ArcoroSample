@@ -1,4 +1,8 @@
-﻿using Arcoro.Common.Interface;
+﻿using System.Collections.Generic;
+using Arcoro.Common.Interface;
+using Arcoro.Common.Model.Company;
+using Arcoro.Common.Model.Employee;
+using Arcoro.Common.Model.Notification;
 
 namespace Arcoro.Business.HttpClient
 {
@@ -9,12 +13,12 @@ namespace Arcoro.Business.HttpClient
 
         }
 
-        object IHH2Client.GetAllCertifiedClasses()
+        List<CertifiedClass> IHH2Client.GetAllCertifiedClasses(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllDeductions()
+        List<Deduction> IHH2Client.GetAllDeductions(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
@@ -24,12 +28,12 @@ namespace Arcoro.Business.HttpClient
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllDepartments()
+        List<Department> IHH2Client.GetAllDepartments(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllEmployeeDeductions()
+        List<EEDeduction> IHH2Client.GetAllEmployeeDeductions(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
@@ -39,22 +43,22 @@ namespace Arcoro.Business.HttpClient
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllEmployeePay()
+        List<EEPay> IHH2Client.GetAllEmployeePay(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllEmployeePayTaxes()
+        List<EEPayTax> IHH2Client.GetAllEmployeePayTaxes(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllEmployees()
+        List<Employee> IHH2Client.GetAllEmployees(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllEmployeeStateTaxes()
+        object IHH2Client.GetAllEmployeeStateTaxes(List<Employee> eeList, List<EEPayTax> eePayTaxes)
         {
             throw new System.NotImplementedException();
         }
@@ -99,17 +103,17 @@ namespace Arcoro.Business.HttpClient
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllPayGroups()
+        List<PayGroup> IHH2Client.GetAllPayGroups()
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllPayTaxes()
+        List<PayTax> IHH2Client.GetAllPayTaxes(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllPayTypes()
+        List<PayType> IHH2Client.GetAllPayTypes(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
@@ -129,17 +133,17 @@ namespace Arcoro.Business.HttpClient
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllUnionClasses()
+        List<UnionClass> IHH2Client.GetAllUnionClasses(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllUnionLocals()
+        List<UnionLocal> IHH2Client.GetAllUnionLocals(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetAllUnions()
+        List<Union> IHH2Client.GetAllUnions(long Version = 0)
         {
             throw new System.NotImplementedException();
         }
@@ -149,12 +153,12 @@ namespace Arcoro.Business.HttpClient
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetEmployeeAddress()
+        List<EEAddress> IHH2Client.GetEmployeeAddress(string EEId)
         {
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetEmployeeBirthDate()
+        List<EEBirthDate> IHH2Client.GetEmployeeBirthDate(string EEId)
         {
             throw new System.NotImplementedException();
         }
@@ -164,7 +168,7 @@ namespace Arcoro.Business.HttpClient
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetEmployeeSSN()
+        List<EESSN> IHH2Client.GetEmployeeSSN(string EEId)
         {
             throw new System.NotImplementedException();
         }
@@ -179,7 +183,7 @@ namespace Arcoro.Business.HttpClient
             throw new System.NotImplementedException();
         }
 
-        object IHH2Client.GetNotificationRegistrations()
+        IList<Registration> IHH2Client.GetNotificationRegistrations()
         {
             throw new System.NotImplementedException();
         }
