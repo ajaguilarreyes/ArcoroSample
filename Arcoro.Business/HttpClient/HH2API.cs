@@ -6,19 +6,26 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Arcoro.Common.Configuration;
 using Arcoro.Common.Helper;
-using ArcoroSamples.hh2;
+using Arcoro.Common.Model.Company;
+using Arcoro.Common.Model.Employee;
+using Arcoro.Common.Model.Enum;
+using Arcoro.Common.Model.Notification;
+using Arcoro.Common.Model.Setup;
+// using ArcoroSamples.hh2;
 using Newtonsoft.Json;
 
 namespace ArcoroSamples.sage
 {
     public class HH2API
     {
-        private Config _config { get; }
+        private AppSettings _config { get; }
 
         public async Task GetAllEmployeeDemographics(List<Employee> eeList)
         {
@@ -385,7 +392,7 @@ namespace ArcoroSamples.sage
             return directDeposit;
         }
 
-        public async Task<string> SubscribeToNotification(ArcoroSamples.hh2.SubscriptionMode Mode, string TypeId)
+        public async Task<string> SubscribeToNotification(SubscriptionMode Mode, string TypeId)
         {
             var results = "";
 
@@ -1331,18 +1338,20 @@ namespace ArcoroSamples.sage
 
         #region Setup
 
-        public static async Task<HH2API> Create(Config config)
+        public static async Task<HH2API> Create(AppSettings config)
         {
             var hh2 = new HH2API(config);
             await hh2.authenticate();
             return hh2;
         }
 
-        private HH2API(Config config)
+        private HH2API(AppSettings config)
         {
             _config = config;
             _config.BaseURI = $"https://{config.HH2Subdomain}.hh2.com/";
-            _config.Client = new HttpClient {BaseAddress = new Uri(_config.BaseURI)};
+            
+            var handler = new HttpClientHandler() {ServerCertificateCustomValidationCallback = (message, certificate, chain, sslPolicyErrors) => true};
+            _config.Client = new HttpClient(handler) {BaseAddress = new Uri(_config.BaseURI)};
             _config.Client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
         }
 

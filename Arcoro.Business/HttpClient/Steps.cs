@@ -3,62 +3,94 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Arcoro.Common.Helper;
-using ArcoroSamples.hh2;
-using ArcoroSamples.sage;
+using Arcoro.Common.Configuration;
+using Arcoro.Common.Model.Company;
+using Arcoro.Common.Model.Employee;
+using Arcoro.Common.Model.Enum;
+using Arcoro.Common.Model.Notification;
+using Arcoro.Common.Model.Setup;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace ArcoroSamples.sage
 {
     public class Steps
     {
-        public Steps()
+        private readonly IConfigurationRoot _configRoot;
+
+        public Steps(IConfigurationRoot configRoot)
         {
-            
-        }
-        public async Task TestAuthentication(Config config, string overrideUser = null, string overridePw = null)
-        {
-            var client = new HttpClient { BaseAddress = new Uri($"https://{config.HH2Subdomain}.hh2.com/") };
-            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            var responseBody = "";
-            var token = AuthenticationResult.NoResponse;
-
-            var request = new
-            {
-                ApiKey = Util.GetPassword("hh2apikey"),
-                ApiSecret = Util.GetPassword("hh2apisecret"),
-                Username = overrideUser ?? Util.GetPassword("hh2username"),
-                Password = overridePw ?? Util.GetPassword(config.HH2Subdomain)
-            };
-
-            var response = client.PostAsJsonAsync(config.BaseURI + "Api/Security/V3/Session.svc/authenticate", request);
-            if (response.Result.IsSuccessStatusCode)
-            {
-                responseBody = await response.Result.Content.ReadAsStringAsync();
-            }
-            else
-            {
-                throw new Exception("Connection Failed!");
-            }
-
-            if (!string.IsNullOrWhiteSpace(responseBody))
-            {
-                token = JsonConvert.DeserializeObject<Authentication>(responseBody).Result;
-            }
-
-            if (token != AuthenticationResult.Validated)
-            {
-                throw new Exception($"Authentication Failed: {token}");
-            }
-	
-            token.Dump();
+            _configRoot = configRoot;
         }
         
-        public async Task GetCertifiedClassesExample(Config config)
+        public async Task TestAuthentication(AppSettings config, string overrideUser = null, string overridePw = null)
+        {
+            var foundHH2Creds = true;
+            var secretProvider = _configRoot.Providers.First();
+            if (!secretProvider.TryGet("ExternalProviders:HH2:ApiKey", out var apiKey)) foundHH2Creds = false;
+            if (!secretProvider.TryGet("ExternalProviders:HH2:ApiSecret", out var apiSecret)) foundHH2Creds = false;
+            if (!secretProvider.TryGet($"ClientCredentials:{config.HH2Subdomain}:Username", out var companyUsername)) foundHH2Creds = false;
+            if (!secretProvider.TryGet($"ClientCredentials:{config.HH2Subdomain}:Password", out var companyPassword)) foundHH2Creds = false;
+            if (!foundHH2Creds)
+            {
+                Console.WriteLine("HH2 Credentials Not Found!");
+                return;
+            }
+            
+            var handler = new HttpClientHandler {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
+            };
+            using (var client = new HttpClient(handler))
+            {
+                client.BaseAddress = new Uri($"https://{config.HH2Subdomain}.hh2.com/");
+                //client.Timeout = TimeSpan.FromSeconds(30);
+                //client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                var responseBody = "";
+                var token = AuthenticationResult.NoResponse;
+
+                var request = new
+                {
+                    ApiKey = apiKey,
+                    ApiSecret = apiSecret,
+                    Username = companyUsername,
+                    Password = companyPassword
+                };
+
+                var response = client.PostAsJsonAsync(config.BaseURI + "Api/Security/V3/Session.svc/authenticate", request);
+                var result = await response;
+                
+                if (result.IsSuccessStatusCode)
+                {
+                    responseBody = await response.Result.Content.ReadAsStringAsync();
+                }
+                else
+                {
+                    throw new Exception("Connection Failed!");
+                }
+
+                if (!string.IsNullOrWhiteSpace(responseBody))
+                {
+                    //token = JsonSerializer.Deserialize<Authentication>(responseBody).Result;
+                    token = JsonConvert.DeserializeObject<Authentication>(responseBody).Result;
+                }
+
+                if (token != AuthenticationResult.Validated)
+                {
+                    throw new Exception($"Authentication Failed: {token}");
+                }
+	    
+                token.Dump();
+            }
+        }
+        
+        public async Task GetCertifiedClassesExample(AppSettings config)
         {
             //authenticate
-            var client = new HttpClient {BaseAddress = new Uri($"https://{config.HH2Subdomain}.hh2.com/")};
+            var handler = new HttpClientHandler() {ServerCertificateCustomValidationCallback = (message, certificate, chain, sslPolicyErrors) => true};
+            var client = new HttpClient(handler) {BaseAddress = new Uri($"https://{config.HH2Subdomain}.hh2.com/")};
             client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             var responseBody = "";
             var token = AuthenticationResult.NoResponse;
@@ -145,7 +177,7 @@ namespace ArcoroSamples.sage
             results.Dump();
         }
 
-        public async Task GetCoreSetupData(Config config)
+        public async Task GetCoreSetupData(AppSettings config)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -165,7 +197,7 @@ namespace ArcoroSamples.sage
             ("GetCoreSetupData TTC: " + sw.Elapsed).Dump();
         }
 
-        public async Task GetEEUsedSetupData(Config config)
+        public async Task GetEEUsedSetupData(AppSettings config)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -184,7 +216,7 @@ namespace ArcoroSamples.sage
             ("GetEEUsedSetupData TTC: " + sw.Elapsed).Dump();
         }
 
-        public async Task GetEmployeesSetupData(Config config)
+        public async Task GetEmployeesSetupData(AppSettings config)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -208,7 +240,7 @@ namespace ArcoroSamples.sage
             ("GetEmployeesSetupData TTC: " + sw.Elapsed).Dump();
         }
 
-        public async Task SubscribeToCompanyNotifications(Config config)
+        public async Task SubscribeToCompanyNotifications(AppSettings config)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -226,7 +258,7 @@ namespace ArcoroSamples.sage
             ("SubscribeToCompanyNotifications TTC: " + sw.Elapsed).Dump();
         }
 
-        public async Task GetNotificationsSubscribedTo(Config config)
+        public async Task GetNotificationsSubscribedTo(AppSettings config)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -239,7 +271,7 @@ namespace ArcoroSamples.sage
             ("GetNotificationSubscribedTo TTC: " + sw.Elapsed).Dump();
         }
 
-        public async Task GetChangeNotifications(Config config, long lastVersion = 0)
+        public async Task GetChangeNotifications(AppSettings config, long lastVersion = 0)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -252,7 +284,7 @@ namespace ArcoroSamples.sage
             ("GetChangeNotifications TTC: " + sw.Elapsed).Dump();
         }
 
-        public async Task GetCoreSetupDataUpdates(Config config)
+        public async Task GetCoreSetupDataUpdates(AppSettings config)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();

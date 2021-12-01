@@ -1,4 +1,8 @@
 ﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcoro.Service
 {
@@ -6,38 +10,19 @@ namespace Arcoro.Service
     {
         public static IConfiguration configuration;
 
-        private static void Main(string[] args)
-        {
-            try
-            {
-                MainAsync(args).Wait();
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        private static void Main(string[] args) => MainAsync(args).Wait();
 
         private static async Task MainAsync(string[] args)
         {
             var serviceCollection = ConfigureServices(new ServiceCollection());
             IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
 
-            try
-            {
-                await serviceProvider.GetService<IApp>().Start();
-            }
-            catch
-            {
-                throw;
-            }
+            await serviceProvider.GetService<IApp>().Start();
         }
 
         private static ServiceCollection ConfigureServices(ServiceCollection serviceCollection)
         {
             string environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            string apiKey = Environment.GetEnvironmentVariable("SAGE_APIKEY");
-            string apiSecret = Environment.GetEnvironmentVariable("SAGE_SECRET");
 
             configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetParent(AppContext.BaseDirectory)?.FullName)
